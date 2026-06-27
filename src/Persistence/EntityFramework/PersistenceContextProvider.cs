@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MUnique.OpenMU.Persistence.EntityFramework.Model;
 using Nito.Disposables;
-using Npgsql;
+using System.Data.Common;
 
 /// <summary>
 /// The persistence context provider for the persistence implemented with entity framework core.
@@ -140,7 +140,7 @@ public class PersistenceContextProvider : IMigratableDatabaseContextProvider
             await using var installationContext = new EntityDataContext();
             return await installationContext.Database.SqlQueryRaw<bool>(
                 """
-                   SELECT "AutoUpdateSchema" as "Value" FROM config."SystemConfiguration"
+                   SELECT AutoUpdateSchema as Value FROM SystemConfiguration
                    """).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception)
@@ -164,7 +164,7 @@ public class PersistenceContextProvider : IMigratableDatabaseContextProvider
                 await using var installationContext = new EntityDataContext();
                 await installationContext.Database.EnsureDeletedAsync().ConfigureAwait(false);
             }
-            catch (NpgsqlException)
+            catch (DbException)
             {
                 // That's expected for a fresh database
             }
